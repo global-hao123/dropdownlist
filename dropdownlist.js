@@ -71,7 +71,7 @@ Dropdownlist.prototype.formDropdownlist = function(){
  */
 Dropdownlist.prototype.bindDropdownlist = function(){
 	//触发下拉列表展开、收起	
-	$(".dropdown").on("click",".dropdown-trigger",function(){
+	$(".dropdown").off("click.dropdownlist").on("click.dropdownlist",".dropdown-trigger",function(){
 		var that = $(this),			
 			listTriggerArrow = that.find("dropdown-arrow"),
 			list = that.siblings(".dropdown-list");
@@ -84,7 +84,7 @@ Dropdownlist.prototype.bindDropdownlist = function(){
 		}
 	});	
 	//点击下拉列表项
-	$(".dropdown-list").on("mousedown","li",function(){
+	$(".dropdown-list").off("mousedown.dropdownlist").on("mousedown.dropdownlist","li",function(){
 		var that = $(this),
 			newVal = that.attr("val"),					
 			thatInput = that.parents(".dropdown").find(".dropdown-input");				
@@ -96,7 +96,7 @@ Dropdownlist.prototype.bindDropdownlist = function(){
 		}				
 	});
 	//收起日期列表
-	$(document).on("mousedown", function(e) {
+	$(document).off("mousedown.dropdownlist").on("mousedown.dropdownlist", function(e) {
 		var el = e.target;
 		$(".dropdown-list").each(function(){
 			var cur = $(this),
