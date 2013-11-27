@@ -1,0 +1,16 @@
+{
+  "name": "dropdownlist",
+  "version": "1.0.1",
+  "authors": [
+    "wangmingfei <wangmingfei@baidu.com>"
+  ],
+  "description": "A jQuery plugin for dropdownlist",
+  "keywords": [
+  ],
+  "license": "MIT",
+  "homepage": "http://gitlab.pro/common-ui/dropdownlist",
+  "ignore": [
+    "**/*",
+    "!src/**"
+  ]
+}
