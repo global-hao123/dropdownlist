@@ -25,10 +25,12 @@ var helper = require('common:widget/ui/helper/helper.js');
  * {
  * 		selector: {string},	占位元素的id，必填
  * 		data: {array}, 	指定下拉列表的数据，选填
- * 		defIndex: {number}	默认选中项的index，选填，默认是取列表中的第一项即0，如果默认想留空请设置为-1
+ * 		defIndex: {number}	默认选中项的index，选填，默认是取列表中的第一项即0，特殊需要留白但是不占用下拉项时可以设置为-1
+ * 		allowEmpty: {number} 是否允许留空
+ * 		emptyItem: {object} 空白项数据，不填是{id:"", name:""}
  * 		visibleNum: {number}	最多可见的行数，选填，多于此数就显示滚动条
  * 		lineHeight: {number}	列表项高度，选填，默认为24，如想覆盖才需要在初始化参数中指定
- * 		supportSubmit: {boolean}	是否支持提交操作，选填，默认为false
+ * 		supportSubmit: {boolean}	是否支持提交或级联操作，选填，默认为false
  * 		onChange: {function}	select的onChange回调，选填
  * }
  * typelist.value: 返回当前选中的值
@@ -38,25 +40,37 @@ var Dropdownlist = function(opt){
 	var that = this;
 	//占位select的id
 	that.selector = opt.selector;
-	//占位select的jQuery对象
-	that.target = $("#"+that.selector);
+	//初始化占位select相关
+	that._initTarget();
+	//是否支持表单提交或级联
+	that.supportSubmit = parseInt(opt.supportSubmit,10) || 0;
+	//如果有级联元素，则supportSubmit一定为1
+	if(opt.child){
+		that.child = opt.child;
+		that.supportSubmit = 1;
+	}
 	//占位select下的option
 	that.options = that.target.find("option");
 	//根据是否有option判断数据是固定来源还是动态获取
 	that.isDataFixed = that.options.length ? 1 : 0;
+	// 是否已经插入dom
 	that.hasShown = false;
 	//缓存列表数据
 	that.data = opt.data || [];
+	// 是否存在空白项
+	that.allowEmpty = parseInt(opt.allowEmpty,10) || 0;
+	// 无选项或可以留空时要显示的文字
+	that.emptyItem = opt.emptyItem || {id:"", name:""};
+	//记录默认选中项的序号
+	that.defIndex = parseInt(opt.defIndex,10) || 0;
 	//记录被选中项的序号
-	that.selIndex = that._initSelIndex(opt);
+	that.selIndex = that._initSelIndex(that.defIndex);
 	//下拉列表的宽度根据占位select的宽度决定
 	that.targetWidth = that.target.css("width");
 	//最多可见的行数，实际数量多于此数就显示滚动条
 	that.visibleNum = opt.visibleNum || 5;
 	//列表项高度
 	that.lineHeight = opt.lineHeight || 24;
-	//是否支持表单提交
-	that.supportSubmit = opt.supportSubmit || false;
 	// select的onChange回调
 	that.onChange = opt.onChange;
 	//下拉列表的tpl
@@ -69,7 +83,23 @@ var Dropdownlist = function(opt){
 Dropdownlist._hasBindEvent = 0;
 //记录当前正在显示的下拉列表
 Dropdownlist._curList;
+//跟随input的移动而移动的计时器
+//Dropdownlist._fixPosTimer;
 
+/**
+ * 初始化占位select的jQuery对象和绑定change事件
+ *
+ * @this {Dropdownlist}
+ */
+Dropdownlist.prototype._initTarget = function(){
+	var that = this;
+	//占位select的jQuery对象
+	that.target = $("#"+that.selector);
+	//绑定占位select的change事件
+	that.target.on("change",function(e){
+		that.onChange && that.onChange.call(that);
+	});
+};
 /**
  * 初始化默认选中项的序号，取值规则为先依据默认选中项参数，如果没有，再看是否是isDataFixed固定数据类型并且已经在dom里指定了默认选中项的，如果还是没有则指定为0
  *
@@ -77,11 +107,11 @@ Dropdownlist._curList;
  * @param {object} opt The init parameter
  * @return {number} the index of list item being selected
  */
-Dropdownlist.prototype._initSelIndex = function(opt){
+Dropdownlist.prototype._initSelIndex = function(defIndex){
 	var that = this,
 		tmp;
-	if(opt.defIndex){
-		tmp = opt.defIndex;
+	if(defIndex){
+		tmp = defIndex;
 	}else if(that.isDataFixed){
 		tmp = that.options.find(":selected").index();
 		!(tmp + 1) && (tmp = 0);
@@ -152,7 +182,7 @@ Dropdownlist.prototype._formLiTpl = function(){
 Dropdownlist.prototype._formData = function(){
 	var that = this;
 	// 如果是option形式，用来抽取数据
-	if(!that.data.length){
+	if(that.isDataFixed && !that.data.length){
 		$.each(that.target.find("option"),function(i,v){
 			var opt = $(v);
 			that.data[that.data.length] = {
@@ -161,6 +191,8 @@ Dropdownlist.prototype._formData = function(){
 			};
 		});
 	}
+	// 如果允许空白项，则将空白项数据插入为data数组的第一个元素
+	that.allowEmpty && that.data.unshift(that.emptyItem);
 };
 
 /**
@@ -171,7 +203,9 @@ Dropdownlist.prototype._formData = function(){
 Dropdownlist.prototype._setDefaultVal = function(){
 	var that = this,selValue;
 	// 如果想默认留空或者数据为空，则输入区为空值；否则输入区显示被选中项的值
-	if(that.selIndex === -1 || !that.data.length){
+	if(that.allowEmpty || !that.data.length){
+		selValue = that.emptyItem;
+	}else if(that.selIndex === -1){
 		selValue = {id: "", name:""};
 	}else{
 		selValue = that.data[that.selIndex];
@@ -179,7 +213,8 @@ Dropdownlist.prototype._setDefaultVal = function(){
 	// 设置默认选中项
 	that.newInput.text(selValue.name).attr({"title":selValue.name,"value":selValue.id});
 	that.value = selValue.id;
-	// 如果要支持表单提交需要做的工作
+	that.title = selValue.name;
+	// 如果要支持表单提交或级联需要做的工作
 	that.supportSubmit && that._prepareSubmit(selValue);
 };
 
@@ -196,6 +231,8 @@ Dropdownlist.prototype._prepareSubmit = function(selValue){
 	}else{
 		that.target.html("<option value='"+selValue.id+"' selected='selected'>"+selValue.name+"</option>");
 	}
+	// 触发select的change事件
+	that.target.trigger("change");
 };
 
 /**
@@ -208,10 +245,37 @@ Dropdownlist.prototype._prepareSubmit = function(selValue){
 Dropdownlist.prototype.reset = function(data,defIndex){
 	var that = this;
 	that.data = data;
-	that.selIndex  = defIndex || 0;
+	// 如果允许留空，则不论是data数组为空还是data数组的第一个元素不是空元素的时候，都会往data数组中插入空白项作为第一个元素，以便下拉列表中第一项为空白项
+	if(that.allowEmpty && (!that.data.length || that.data[0].id !== that.emptyItem.id)){
+		that.data.unshift(that.emptyItem);
+	}
+	that.selIndex  = typeof defIndex !== "undefined" ? parseInt(defIndex,10) : that.defIndex;
 	that.innerList.html(that._formLiTpl());
 	that._setDefaultVal();
 };
+
+/**
+ * 重置自定义下拉列表位置
+ *
+ * @this {Dropdownlist}
+ * @param {object} toObj 跟随对象
+ * @param {object} fromObj 位置参考对象
+ * @param {object} pos 偏移位置信息
+ * @return {object} {跟随对象，位置参考对象，偏移位置，位置参考对象当前位置信息}
+
+Dropdownlist.prototype._fixPosition = function(toObj, fromObj, pos) {
+	var offset = fromObj.offset(),
+		curPos = offset;
+
+	pos = pos || {
+		left: 0,
+		top: 0
+	};
+	curPos.left += pos.left;
+	curPos.top += pos.top;
+	toObj.offset(curPos);
+}; */
+
 /**
  * 绑定自定义下拉列表事件
  *
@@ -224,10 +288,22 @@ Dropdownlist.prototype._bindEvent = function(){
 	.on("click.dropdownlist",".dropdown-trigger",function(e){
 		var that = $(this),
 			baseOffset = that.offset(),
+			pos = {
+				top: that.outerHeight(),
+				left: 0
+			},
 			listTriggerArrow = that.find(".dropdown-arrow");
 		if(thisObj.list.is(":visible")){
 			// listTriggerArrow.removeClass("dropdown-arrow-up");
 		}else{
+			//当下拉列表被展开时开始设置计时器循环监听参考对象位置是否移动，如果移动了就修正下拉列表的位置
+			/*Dropdownlist._fixPosTimer = setInterval(function(){
+				var newOffset = that.offset();
+				if (newOffset.left != baseOffset.left || newOffset.top != baseOffset.top) {
+					thisObj._fixPosition(thisObj.list, that, pos);
+					baseOffset = that.offset();
+				}
+			},500);*/
 			// 下拉展开部分插到body下，避免被祖先元素的任何样式限制（比如说z-index和overflow:hidden都可能导致下拉列表被挡住）
 			thisObj.list
 			.css({
@@ -252,6 +328,7 @@ Dropdownlist.prototype._bindEvent = function(){
 			listTriggerArrow.addClass("dropdown-arrow-up");
 		}
 	});
+
 	thisObj.list
 	// 鼠标进入下拉列表时去掉列表项的选中样式，让样式跟随鼠标移动而变化
 	.on("mouseenter.dropdownlist",function(){
@@ -277,14 +354,28 @@ Dropdownlist.prototype._bindEvent = function(){
 				"title": newVal.name
 			});
 			thisObj.value = newVal.id;
+			thisObj.title = newVal.name;
 			thisObj.supportSubmit && thisObj._prepareSubmit(newVal);
 			that.addClass("dropdown-list-hover")
 				.siblings(".dropdown-list-hover").removeClass("dropdown-list-hover");
-			thisObj.onChange && thisObj.onChange.call(that);
 		}
 	});
-	//收起日期列表
+	//绑定所有实例公用的事件
 	if(!Dropdownlist._hasBindEvent){
+		//当页面滚动时，先暂时隐藏下拉列表，等到滚动结束后300ms才重新显示下拉列表
+		/*$(window).scroll(function(){
+			var cur = Dropdownlist._curList;
+			if(cur && cur.is(":visible")){console.log(1);
+				clearTimeout(Dropdownlist._scrollTimer);
+				cur.hide();
+				// cur.css("visibility","hidden");
+				Dropdownlist._scrollTimer = setTimeout(function(){
+					cur.show();
+					// cur.css("visibility","visible");
+				},500);
+			}
+		});*/
+		//收起日期列表
 		$(document).on("mouseup.dropdownlist", function(e) {
 			var el = e.target,
 				cur = Dropdownlist._curList;
@@ -292,8 +383,9 @@ Dropdownlist.prototype._bindEvent = function(){
 			if(cur && el !== cur.find(".dropdown-list-inner")[0]){
 				cur.slideUp(200,function(){
 					var parent = $("#"+cur.attr("id").replace(/List$/,"DropDown"));
-					// cur.appendTo(parent); // 收起后重新放回原来位置
 					parent.find(".dropdown-arrow-up").removeClass("dropdown-arrow-up");
+					//当下拉列表被收起时，去掉监听参考对象位置的计时器
+					//clearInterval(Dropdownlist._fixPosTimer);
 				});
 			}
 		});
@@ -309,7 +401,7 @@ Dropdownlist.prototype._bindEvent = function(){
  */
 Dropdownlist.prototype._init = function(){
 	var that = this;
-	that.isDataFixed && that._formData();
+	that._formData();
 	that._initDom();
 	that._bindEvent();
 	return that;

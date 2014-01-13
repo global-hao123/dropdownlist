@@ -5,6 +5,9 @@
 	<title>Document</title>
 	<link rel="stylesheet" href="../src/dropdownlist.css" />
 	<style>
+		body{
+			height: 3000px;
+		}
 		ul{
 			padding:0;
 			margin:0;
@@ -17,11 +20,6 @@
 		select{
 			width:174px;
 		}
-		/* .dropdown-list ul{
-			max-height: 144px;
-			overflow-y: auto;
-			overflow-x: hidden;
-		} */
 
 	</style>
 </head>
@@ -87,6 +85,9 @@
 		<br/><br/>
 		<label for="select7">级联b：</label>
 		<select id="select7"></select>
+		<br/><br/>
+		<label for="select8">级联c：</label>
+		<select id="select8"></select>
 	</div>
 </body>
 <script>module = {};</script>
@@ -95,7 +96,7 @@
 <script src="../src/dropdownlist.js"></script>
 <script>
 	window.conf = window.conf || {};
-	/*window.conf.UT = {tn:"1"};
+	window.conf.UT = {tn:"1"};
 	var UT={url:"/img/gut.gif",send:function(e,t){e=e||{};var n=window.conf.UT,r=t&&t.url||this.url,i=t&&t.params||n.params,s=e.r=+(new Date),o=window,u=encodeURIComponent,a=o["UT"+s]=new Image,f,l=[];if(i)for(var c in i)i[c]!==f&&e[c]===f&&(e[c]=i[c]);for(f in e)l.push(u(f)+"="+u(e[f]));a.onload=a.onerror=function(){o["UT"+s]=null},a.src=r+"?"+l.join("&"),a=l=null},attr:function(e,t){var n=e.getAttribute("log-mod");if(!n)e.parentNode&&e.parentNode.tagName.toUpperCase()!="BODY"&&this.attr(e.parentNode,t);else{var r=e.getAttribute("log-index");r&&(t.modIndex=r),t.modId=n}},link:function(e){var t={},n=e.getAttribute("href",2);n&&(/^(javascript|#)/.test(n)?(t.ac="b",t.url="none"):(t.ac="a",t.url=n));var r=e.getAttribute("log-index");r&&(t.linkIndex=r);var i=e.getAttribute("data-sort")||"";i&&(t.sort=i,t.value=e.getAttribute("data-value")||"");var s=e.getAttribute("log-oid");return s&&(t.offerid=s),this.attr(e,t),t}};
 		UT.send({type:"access",tn:conf.UT.tn});
 		!function(W,D,A,E,handle){D[A]?D[A](E,handle,!1):D.attachEvent("on"+E,handle)}(window,document,"addEventListener","mousedown",function(e){
@@ -112,7 +113,7 @@
 				    t = t.parentNode;
 				}
 			}
-		);*/
+		);
 
 	conf.dir = $("html").attr("dir");
 	var data = [{
@@ -136,20 +137,20 @@
 	}
 	var wmf = new Dropdownlist({
 		selector: "wmf",
-		supportSubmit: true
+		supportSubmit: 1
 	});
 	new Dropdownlist({
 		selector: "select1",
-		supportSubmit: true
+		supportSubmit: 1
 	});
 	new Dropdownlist({
 		selector: "select2",
 		data: data,
-		supportSubmit: true
+		supportSubmit: 1
 	});
 	new Dropdownlist({
 		selector: "select3",
-		data: [],
+		// data: [],
 		defIndex: 1
 	});
 	new Dropdownlist({
@@ -161,18 +162,98 @@
 		selector: "select5",
 		data: data1,
 		defIndex: 7,
-		supportSubmit: true
+		supportSubmit: 1
 	});
-	var dropdown6 = new Dropdownlist({
-		selector: "select6",
-		data: data,
-		defIndex: -1,
+var rawData = [{
+		id: "0",
+		name: "0",
+		brand: [{
+			id: "0",
+			name: "0-0",
+			model:[{
+				id: "0",
+				name: "0-0-0"
+			},{
+				id: "1",
+				name: "0-0-1"
+			}]
+		},{
+			id: "1",
+			name: "0-1",
+			model:[{
+				id: "0",
+				name: "0-1-0"
+			},{
+				id: "1",
+				name: "0-1-1"
+			}]
+		}]
+	},{
+		id: "1",
+		name: "1",
+		brand: [{
+			id: "0",
+			name: "1-0",
+			model:[{
+				id: "0",
+				name: "1-0-0"
+			},{
+				id: "1",
+				name: "1-0-1"
+			}]
+		},{
+			id: "1",
+			name: "1-1",
+			model:[{
+				id: "0",
+				name: "1-1-0"
+			},{
+				id: "1",
+				name: "1-1-1"
+			}]
+		}]
+	}];
+
+	function getData(data,param,prop){
+		var result = data;
+		result = result[param] && result[param][prop] ? result[param][prop] : [];
+		return result;
+	}
+	var dropdown8 = new Dropdownlist({
+		selector: "select8",
+        allowEmpty: "1",
+		emptyItem: {
+            id: "",
+            name: "ALL"
+        }
+	});
+
+	var dropdown7 = new Dropdownlist({
+		selector: "select7",
+		child: dropdown8,
+        allowEmpty: "1",
+		emptyItem: {
+            id: "",
+            name: "ALL"
+        },
 		onChange: function(){
-			dropdown7.reset(eval("data"+dropdown6.value));
+			var that = this;
+			that.child.reset(getData(that.data,that.selIndex,"model"));
 		}
 	});
-	var dropdown7 = new Dropdownlist({
-		selector: "select7"
+
+	var dropdown6 = new Dropdownlist({
+		selector: "select6",
+		child: dropdown7,
+		data: rawData,
+		emptyItem: {
+            id: "",
+            name: "ALL"
+        },
+		onChange: function(){
+			var that = this;
+			that.child.reset(getData(that.data,that.selIndex,"brand"));
+		}
 	});
 </script>
 </html>
