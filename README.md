@@ -46,8 +46,7 @@ A jQuery plugin for custom select
 | supportSubmit     | `number` | 0,选填 | 是否支持提交或级联操作 |
 | onChange     | `function` | 选填 | select的onChange回调 |
 
-
- ## 对外可见的属性和方法：
+## 对外可见的属性和方法：
 
 | Key        | Type | Description |
 | ------------- |:--------:| -----:|
@@ -57,7 +56,7 @@ A jQuery plugin for custom select
 
 ## DEMO
 
-### 1.内容固定，可以直接写在option中
+#### 1.内容固定，可以直接写在option中
 
 【注1】如果option没有指定value，则默认取option的文案作为value
 【注2】文案长度过长时会自动把超出部分用...显示
@@ -75,7 +74,7 @@ new Dropdownlist({
 });
 ```
 
-### 2.内容灵活作为参数传入
+#### 2.内容灵活作为参数传入
 
 ```html
 <select id="select1"></select>
@@ -95,7 +94,7 @@ new Dropdownlist({
 });
 ```
 
-### 3.设置默认值
+#### 3.设置默认值
 
 ```javascript
 new Dropdownlist({
@@ -105,7 +104,7 @@ new Dropdownlist({
 });
 ```
 
-### 4.内容太长可以使用滚动条
+#### 4.内容太长可以使用滚动条
 
 ```javascript
 new Dropdownlist({
@@ -115,7 +114,7 @@ new Dropdownlist({
 });
 ```
 
-### 5.级联
+#### 5.级联
 
 ```html
 <label for="select1">级联a：</label>
