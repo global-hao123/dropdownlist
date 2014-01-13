@@ -6,19 +6,28 @@ A jQuery plugin for custom select
 ## How to use
 
 在页面上添加一个隐藏的select元素，参数至少需要提供一个id，
+
 - 如果select里面是空白则下拉内容通过js赋值给data参数来生成（适用于动态内容）,如
    <select id="#{selector}"></select>
+
 - 如果在select内写option则下拉内容直接从页面的option里取（适用于固定内容，option的值和显示名称一样则可以省略value属性），如
+
+```html
    <select id="selector">
       <option value="#{id}">#{name}</option>
       ...
    </select>
+```
+
  生成的自定义下拉列表宽度取决于占位selector的宽度，默认比其宽度少30px
  
  实例化语句如下：
- var typelist = new Dropdownlist(opt);
 
- ## Options
+```javascript
+ var typelist = new Dropdownlist(opt);
+```
+
+## Options
 
 | Option        | Type | Default Value        | Description |
 | ------------- |:-----|:--------:| -----:|
