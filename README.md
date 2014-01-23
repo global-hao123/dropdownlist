@@ -45,6 +45,7 @@ A jQuery plugin for custom select
 | child     | `Dropdownlist` | 选填 | 级联dropdownlist对象,初始化顺序需要排在级联对象之后,如果有child则supportSumbit自动为1 |
 | supportSubmit     | `number` | 0,选填 | 是否支持提交或级联操作 |
 | onChange     | `function` | 选填 | select的onChange回调 |
+| appendToBody     | `number` | 0,选填 | 下拉列表是否要插到body下，避免被祖先元素的任何样式限制（比如说z-index和overflow:hidden都可能导致下拉列表被挡住） |
 
 ## 对外可见的属性和方法：
 

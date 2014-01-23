@@ -53,12 +53,14 @@
 			<option value="2" title="bbb">bbb</option>
 		</select>
 		<br/><br/>
-		<label for="wmf">不指定value，默认取option的文案作为value：</label>
-		<select id="wmf">
-			<option>aaa</option>
-			<option>bbb</option>
-			<option>ccc</option>
-		</select><br/><br/>
+		<div style="position:fixed;top:50px;left:600px">
+			<label for="wmf">不指定value，默认取option的文案作为value：</label>
+			<select id="wmf">
+				<option>aaa</option>
+				<option>bbb</option>
+				<option>ccc</option>
+			</select><br/><br/>
+		</div>
 		<label for="select1">内容固定，可以直接写在option中：</label>
 		<select id="select1">
 			<option value="1" title="aaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaas">aaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaas</option>
@@ -137,6 +139,7 @@
 	}
 	var wmf = new Dropdownlist({
 		selector: "wmf",
+		appendToBody: 1,
 		supportSubmit: 1
 	});
 	new Dropdownlist({
