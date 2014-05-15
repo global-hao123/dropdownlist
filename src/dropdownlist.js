@@ -1,5 +1,5 @@
-var $ = require('common:widget/ui/jquery/jquery.js');
-var helper = require('common:widget/ui/helper/helper.js');
+/*var $ = require('common:widget/ui/jquery/jquery.js');
+var helper = require('common:widget/ui/helper/helper.js');*/
 /**
  * 【功能说明】针对目前页面上有很多相同自定义样式的下拉列表散布在多个模块中（因为样式需要自定义，故不能使用原始的select标签，需要用其它标签来模拟一个select），将初始化及此部分的通用事件绑定代码提出来作为一个单独的组件，提供初始化、通用事件（包括下拉列表的显隐、列表项的选择等）、一套通用样式
  * 【使用方法】在页面上添加一个隐藏的select元素，参数至少需要提供一个id，
@@ -30,8 +30,10 @@ var helper = require('common:widget/ui/helper/helper.js');
  * 		emptyItem: {object} 空白项数据，不填是{id:"", name:""}
  * 		visibleNum: {number}	最多可见的行数，选填，多于此数就显示滚动条
  * 		lineHeight: {number}	列表项高度，选填，默认为24，如想覆盖才需要在初始化参数中指定
- * 		supportSubmit: {boolean}	是否支持提交或级联操作，选填，默认为false
- * 		onChange: {function}	select的onChange回调，选填
+ * 		supportSubmit: {number}	是否支持提交或级联操作，选填，默认为false
+ * 		customScrollbar: {number}	是否使用自定义滚动条，选填，默认为false
+ * 		onChange: {function}	select的onChange回调，选填，
+ * 		appendToBody: {number}	是否需要添加到body下，避免被祖先元素的任何样式限制（比如说z-index和overflow:hidden都可能导致下拉列表被挡住）
  * }
  * typelist.value: 返回当前选中的值
  * typelist.reset(data,defIndex): 重置下拉列表内容
@@ -53,8 +55,8 @@ var Dropdownlist = function(opt){
 	that.options = that.target.find("option");
 	//根据是否有option判断数据是固定来源还是动态获取
 	that.isDataFixed = that.options.length ? 1 : 0;
-	// 是否已经插入dom
-	that.hasShown = false;
+	// 是否需要添加到body下
+	that.appendToBody = parseInt(opt.appendToBody,10) || 0;
 	//缓存列表数据
 	that.data = opt.data || [];
 	// 是否存在空白项
@@ -71,6 +73,8 @@ var Dropdownlist = function(opt){
 	that.visibleNum = opt.visibleNum || 5;
 	//列表项高度
 	that.lineHeight = opt.lineHeight || 24;
+	//是否使用自定义滚动条
+	that.customScrollbar = parseInt(opt.customScrollbar,10) || 0;
 	// select的onChange回调
 	that.onChange = opt.onChange;
 	//下拉列表的tpl
@@ -81,10 +85,29 @@ var Dropdownlist = function(opt){
 
 //是否已经绑定document事件的标识位
 Dropdownlist._hasBindEvent = 0;
+//记录当前正在显示的dropdownlist对象
+Dropdownlist._curObj;
 //记录当前正在显示的下拉列表
 Dropdownlist._curList;
 //跟随input的移动而移动的计时器
-//Dropdownlist._fixPosTimer;
+Dropdownlist._fixPosTimer;
+//处理窗口滚动的计时器
+Dropdownlist._scrollTimer;
+
+/**
+ * 收起展开的下拉列表
+ *
+ * @this {Dropdownlist}
+ */
+Dropdownlist._hide = function(){
+	var curList = Dropdownlist._curList;
+	curList.hide(0,function(){
+		var parent = $("#"+curList.attr("id").replace(/List$/,"DropDown"));
+		parent.find(".dropdown-arrow-up").removeClass("dropdown-arrow-up");
+		//当下拉列表被收起时，去掉监听参考对象位置的计时器
+		clearInterval(Dropdownlist._fixPosTimer);
+	});
+};
 
 /**
  * 初始化占位select的jQuery对象和绑定change事件
@@ -149,12 +172,28 @@ Dropdownlist.prototype._initDom = function(){
 	that._setDefaultVal();
 	//设置下拉部分的宽度，和input保持一致
 	that.list.css("width",that.newInput.outerWidth());
-	//设置下拉部分的最大高度，超出部分出滚动条
-	that.innerList.css({
-		"max-height": that.visibleNum * that.lineHeight,
-		"overflow-y": "auto",
-		"overflow-x": "hidden"
-	});
+	// 把下拉部分添加到body下
+	that.appendToBody && that.list.appendTo($("body"));
+	// 是否使用自定义滚动条
+	if(that.customScrollbar){
+		if(typeof(require) != "undefined"){
+			require.async("common:widget/ui/scrollable/scrollable.js", function(){
+				that.scrollbar = that.innerList.scrollable();
+			});
+		}else{
+			that.scrollbar = that.innerList.scrollable();
+		}
+		that.list.css({
+			"max-height": that.visibleNum * that.lineHeight
+		});
+	}else{
+		//设置下拉部分的最大高度，超出部分出滚动条
+		that.innerList.css({
+			"max-height": that.visibleNum * that.lineHeight,
+			"overflow-y": "auto",
+			"overflow-x": "hidden"
+		});
+	}
 };
 
 /**
@@ -262,7 +301,7 @@ Dropdownlist.prototype.reset = function(data,defIndex){
  * @param {object} fromObj 位置参考对象
  * @param {object} pos 偏移位置信息
  * @return {object} {跟随对象，位置参考对象，偏移位置，位置参考对象当前位置信息}
-
+ */
 Dropdownlist.prototype._fixPosition = function(toObj, fromObj, pos) {
 	var offset = fromObj.offset(),
 		curPos = offset;
@@ -274,7 +313,7 @@ Dropdownlist.prototype._fixPosition = function(toObj, fromObj, pos) {
 	curPos.left += pos.left;
 	curPos.top += pos.top;
 	toObj.offset(curPos);
-}; */
+};
 
 /**
  * 绑定自定义下拉列表事件
@@ -286,46 +325,49 @@ Dropdownlist.prototype._bindEvent = function(){
 	thisObj.newSelector
 	//触发下拉列表展开、收起
 	.on("click.dropdownlist",".dropdown-trigger",function(e){
-		var that = $(this),
-			baseOffset = that.offset(),
-			pos = {
-				top: that.outerHeight(),
-				left: 0
-			},
-			listTriggerArrow = that.find(".dropdown-arrow");
-		if(thisObj.list.is(":visible")){
-			// listTriggerArrow.removeClass("dropdown-arrow-up");
-		}else{
-			//当下拉列表被展开时开始设置计时器循环监听参考对象位置是否移动，如果移动了就修正下拉列表的位置
-			/*Dropdownlist._fixPosTimer = setInterval(function(){
+		if(thisObj.list.is(":hidden")){
+			var that = $(this),
+				// 在body下则获取绝对位置，否则获取相对定位容器的相对位置
+				baseOffset = thisObj.appendToBody ? that.offset() : that.position(),
+				pos = {
+					top: that.outerHeight(),
+					left: 0
+				},
+				listTriggerArrow = that.find(".dropdown-arrow");
+			//如果下拉部分在body下，则当下拉列表被展开时，开始设置计时器循环监听参考对象位置是否移动，如果移动了就修正下拉列表的位置
+			thisObj.appendToBody && (Dropdownlist._fixPosTimer = setInterval(function(){
 				var newOffset = that.offset();
 				if (newOffset.left != baseOffset.left || newOffset.top != baseOffset.top) {
 					thisObj._fixPosition(thisObj.list, that, pos);
 					baseOffset = that.offset();
 				}
-			},500);*/
-			// 下拉展开部分插到body下，避免被祖先元素的任何样式限制（比如说z-index和overflow:hidden都可能导致下拉列表被挡住）
+			},200));
+			//设置下拉部分的位置及向下滑动展开
 			thisObj.list
 			.css({
 				left: baseOffset.left,
 				top: baseOffset.top + that.outerHeight()
-			});
-			if(!thisObj.hasShown){
-				thisObj.list.appendTo($("body"));
-				thisObj.hasShown = true;
-			}
-			thisObj.list
-			.slideDown(200,function(){
-				Dropdownlist._curList = thisObj.list;
+			})
+			.show(0,function(){
+				Dropdownlist._curObj = thisObj;
+				Dropdownlist._curList = Dropdownlist._curObj.list;
 			});
 			// 根据当前被选中项重置默认选中效果和定位显示
 			if(thisObj.selIndex >= 0){
-				var step = thisObj.selIndex > thisObj.visibleNum ? thisObj.selIndex : 0;
+				var step = thisObj.selIndex >= thisObj.visibleNum ? thisObj.selIndex : 0;
 				thisObj.innerList.find("li").removeClass("dropdown-list-hover")
 								   .eq(thisObj.selIndex).addClass("dropdown-list-hover");
-			  	thisObj.innerList.scrollTop(thisObj.lineHeight * step);
+				if(thisObj.customScrollbar){
+					thisObj.scrollbar.goTo({
+						y: -thisObj.lineHeight * step
+					})
+				}else{
+					thisObj.innerList.scrollTop(thisObj.lineHeight * step);
+				}
 			}
 			listTriggerArrow.addClass("dropdown-arrow-up");
+		}else{
+			Dropdownlist._hide();
 		}
 	});
 
@@ -362,31 +404,33 @@ Dropdownlist.prototype._bindEvent = function(){
 	});
 	//绑定所有实例公用的事件
 	if(!Dropdownlist._hasBindEvent){
-		//当页面滚动时，先暂时隐藏下拉列表，等到滚动结束后300ms才重新显示下拉列表
-		/*$(window).scroll(function(){
+		//当页面滚动时，如果下拉列表有展开并且其位置在body下是，要先暂时隐藏下拉列表，等到滚动结束后才重新显示
+		$(window).scroll(function(){
 			var cur = Dropdownlist._curList;
-			if(cur && cur.is(":visible")){console.log(1);
+			if(cur && cur.is(":visible") && cur.parent("body").length){
 				clearTimeout(Dropdownlist._scrollTimer);
-				cur.hide();
-				// cur.css("visibility","hidden");
+				// cur.hide();
+				cur.css("visibility","hidden");
 				Dropdownlist._scrollTimer = setTimeout(function(){
-					cur.show();
-					// cur.css("visibility","visible");
+					// cur.show();
+					cur.css("visibility","visible");
 				},500);
 			}
-		});*/
+		});
 		//收起日期列表
 		$(document).on("mouseup.dropdownlist", function(e) {
 			var el = e.target,
-				cur = Dropdownlist._curList;
+				curObj = Dropdownlist._curObj,
+				curList = Dropdownlist._curList;
 			// 排除掉下拉列表滚动条的点击，其它都会触发收起
-			if(cur && el !== cur.find(".dropdown-list-inner")[0]){
-				cur.slideUp(200,function(){
-					var parent = $("#"+cur.attr("id").replace(/List$/,"DropDown"));
+			if(curList && el !== curList.find(".dropdown-list-inner")[0] && !$.contains($(".dropdown-trigger",curObj.newSelector)[0],el)){
+				/*curList.hide(0,function(){
+					var parent = $("#"+curList.attr("id").replace(/List$/,"DropDown"));
 					parent.find(".dropdown-arrow-up").removeClass("dropdown-arrow-up");
 					//当下拉列表被收起时，去掉监听参考对象位置的计时器
-					//clearInterval(Dropdownlist._fixPosTimer);
-				});
+					clearInterval(Dropdownlist._fixPosTimer);
+				});*/
+				Dropdownlist._hide();
 			}
 		});
 		Dropdownlist._hasBindEvent = 1;
@@ -406,5 +450,3 @@ Dropdownlist.prototype._init = function(){
 	that._bindEvent();
 	return that;
 };
-
-module.exports = Dropdownlist;

@@ -1,8 +1,9 @@
 <!doctype html>
-<html lang="en" dir="ltr" framework="common:static/mod.js">
+<html lang="en" dir="ltr">
 <head>
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<link rel="stylesheet" href="../test/js/scrollable/scrollable.css" />
 	<link rel="stylesheet" href="../src/dropdownlist.css" />
 	<style>
 		body{
@@ -53,20 +54,25 @@
 			<option value="2" title="bbb">bbb</option>
 		</select>
 		<br/><br/>
-		<label for="wmf">不指定value，默认取option的文案作为value：</label>
-		<select id="wmf">
-			<option>aaa</option>
-			<option>bbb</option>
-			<option>ccc</option>
-		</select><br/><br/>
+		<div style="position:fixed;top:50px;left:600px">
+			<label for="wmf">不指定value，默认取option的文案作为value：</label>
+			<select id="wmf">
+				<option>aaa</option>
+				<option>bbb</option>
+				<option>ccc</option>
+			</select><br/><br/>
+		</div>
 		<label for="select1">内容固定，可以直接写在option中：</label>
 		<select id="select1">
 			<option value="1" title="aaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaas">aaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaaaaaAAAAAaaaaaas</option>
 			<option value="2" title="bbb">bbb</option>
 		</select>
 		<br/><br/>
-		<label for="select5">内容太长可以使用滚动条：</label>
+		<label for="select5">内容太长使用自定义滚动条：</label>
 		<select id="select5"></select>
+		<br/><br/>
+		<label for="select51">内容太长使用原生滚动条：</label>
+		<select id="select51"></select>
 		<br/><br/>
 		<label for="select3">设置默认值：</label>
 		<select id="select3">
@@ -91,12 +97,13 @@
 	</div>
 </body>
 <script>module = {};</script>
-<script src="../test/js/mod.js"></script>
-<script src="../test/js/js_framework.js"></script>
+<script src="../test/js/jquery/jquery.js"></script>
+<script src="../test/js/helper/helper.js"></script>
+<script src="../test/js/scrollable/scrollable.js"></script>
 <script src="../src/dropdownlist.js"></script>
 <script>
 	window.conf = window.conf || {};
-	window.conf.UT = {tn:"1"};
+	/*window.conf.UT = {tn:"1"};
 	var UT={url:"/img/gut.gif",send:function(e,t){e=e||{};var n=window.conf.UT,r=t&&t.url||this.url,i=t&&t.params||n.params,s=e.r=+(new Date),o=window,u=encodeURIComponent,a=o["UT"+s]=new Image,f,l=[];if(i)for(var c in i)i[c]!==f&&e[c]===f&&(e[c]=i[c]);for(f in e)l.push(u(f)+"="+u(e[f]));a.onload=a.onerror=function(){o["UT"+s]=null},a.src=r+"?"+l.join("&"),a=l=null},attr:function(e,t){var n=e.getAttribute("log-mod");if(!n)e.parentNode&&e.parentNode.tagName.toUpperCase()!="BODY"&&this.attr(e.parentNode,t);else{var r=e.getAttribute("log-index");r&&(t.modIndex=r),t.modId=n}},link:function(e){var t={},n=e.getAttribute("href",2);n&&(/^(javascript|#)/.test(n)?(t.ac="b",t.url="none"):(t.ac="a",t.url=n));var r=e.getAttribute("log-index");r&&(t.linkIndex=r);var i=e.getAttribute("data-sort")||"";i&&(t.sort=i,t.value=e.getAttribute("data-value")||"");var s=e.getAttribute("log-oid");return s&&(t.offerid=s),this.attr(e,t),t}};
 		UT.send({type:"access",tn:conf.UT.tn});
 		!function(W,D,A,E,handle){D[A]?D[A](E,handle,!1):D.attachEvent("on"+E,handle)}(window,document,"addEventListener","mousedown",function(e){
@@ -113,7 +120,7 @@
 				    t = t.parentNode;
 				}
 			}
-		);
+		);*/
 
 	conf.dir = $("html").attr("dir");
 	var data = [{
@@ -137,6 +144,7 @@
 	}
 	var wmf = new Dropdownlist({
 		selector: "wmf",
+		appendToBody: 1,
 		supportSubmit: 1
 	});
 	new Dropdownlist({
@@ -161,7 +169,14 @@
 	new Dropdownlist({
 		selector: "select5",
 		data: data1,
-		defIndex: 7,
+		defIndex: 16,
+		supportSubmit: 1,
+		customScrollbar: 1
+	});
+	new Dropdownlist({
+		selector: "select51",
+		data: data1,
+		defIndex: 16,
 		supportSubmit: 1
 	});
 var rawData = [{
