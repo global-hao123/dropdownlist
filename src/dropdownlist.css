@@ -90,9 +90,9 @@
 	font-size:12px;
 }
 .dropdown-list ul{
-	max-height:144px;
+	/* max-height:144px;
 	overflow-y:auto;
-	overflow-x:hidden;
+	overflow-x:hidden; */
 }
 .dropdown-list li{
 	cursor:pointer;
