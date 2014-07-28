@@ -55,7 +55,7 @@
 		</select>
 		<br/><br/>
 		<div style="position:fixed;top:50px;left:600px">
-			<label for="wmf">不指定value，默认取option的文案作为value：</label>
+			<label for="wmf">不指定value，默认取option的文案作为value<br/>&& 下拉列表自动跟随：</label>
 			<select id="wmf">
 				<option>aaa</option>
 				<option>bbb</option>
@@ -103,25 +103,6 @@
 <script src="../src/dropdownlist.js"></script>
 <script>
 	window.conf = window.conf || {};
-	/*window.conf.UT = {tn:"1"};
-	var UT={url:"/img/gut.gif",send:function(e,t){e=e||{};var n=window.conf.UT,r=t&&t.url||this.url,i=t&&t.params||n.params,s=e.r=+(new Date),o=window,u=encodeURIComponent,a=o["UT"+s]=new Image,f,l=[];if(i)for(var c in i)i[c]!==f&&e[c]===f&&(e[c]=i[c]);for(f in e)l.push(u(f)+"="+u(e[f]));a.onload=a.onerror=function(){o["UT"+s]=null},a.src=r+"?"+l.join("&"),a=l=null},attr:function(e,t){var n=e.getAttribute("log-mod");if(!n)e.parentNode&&e.parentNode.tagName.toUpperCase()!="BODY"&&this.attr(e.parentNode,t);else{var r=e.getAttribute("log-index");r&&(t.modIndex=r),t.modId=n}},link:function(e){var t={},n=e.getAttribute("href",2);n&&(/^(javascript|#)/.test(n)?(t.ac="b",t.url="none"):(t.ac="a",t.url=n));var r=e.getAttribute("log-index");r&&(t.linkIndex=r);var i=e.getAttribute("data-sort")||"";i&&(t.sort=i,t.value=e.getAttribute("data-value")||"");var s=e.getAttribute("log-oid");return s&&(t.offerid=s),this.attr(e,t),t}};
-		UT.send({type:"access",tn:conf.UT.tn});
-		!function(W,D,A,E,handle){D[A]?D[A](E,handle,!1):D.attachEvent("on"+E,handle)}(window,document,"addEventListener","mousedown",function(e){
-				e = e || event;
-				var t = e.target || e.srcElement;
-				for (var n = 0; n <= 2; n++) {
-				    if (t.tagName === "BODY" || t.tagName === "HTML") break;
-				    if (t.tagName === "A") {
-				        var data = UT.link(t);
-				        data.position = "links";
-				        UT.send(data);
-				        break;
-				    }
-				    t = t.parentNode;
-				}
-			}
-		);*/
-
 	conf.dir = $("html").attr("dir");
 	var data = [{
 		id: "1",

@@ -1,5 +1,5 @@
-/*var $ = require('common:widget/ui/jquery/jquery.js');
-var helper = require('common:widget/ui/helper/helper.js');*/
+var $ = window.jQuery || window.require && require('common:widget/ui/jquery/jquery.js');
+var helper = window.helper || window.require && require('common:widget/ui/helper/helper.js');
 /**
  * 【功能说明】针对目前页面上有很多相同自定义样式的下拉列表散布在多个模块中（因为样式需要自定义，故不能使用原始的select标签，需要用其它标签来模拟一个select），将初始化及此部分的通用事件绑定代码提出来作为一个单独的组件，提供初始化、通用事件（包括下拉列表的显隐、列表项的选择等）、一套通用样式
  * 【使用方法】在页面上添加一个隐藏的select元素，参数至少需要提供一个id，
@@ -33,6 +33,7 @@ var helper = require('common:widget/ui/helper/helper.js');*/
  * 		supportSubmit: {number}	是否支持提交或级联操作，选填，默认为false
  * 		customScrollbar: {number}	是否使用自定义滚动条，选填，默认为false
  * 		onChange: {function}	select的onChange回调，选填，
+ * 		customLiTpl {string}	自定义li的tpl，选填，
  * 		appendToBody: {number}	是否需要添加到body下，避免被祖先元素的任何样式限制（比如说z-index和overflow:hidden都可能导致下拉列表被挡住）
  * }
  * typelist.value: 返回当前选中的值
@@ -79,6 +80,8 @@ var Dropdownlist = function(opt){
 	that.onChange = opt.onChange;
 	//下拉列表的tpl
 	that.listTpl = "<span class='ib dropdown dropdown-#{dir}' id='#{targetPrefix}DropDown'><span class='dropdown-trigger'><span class='dropdown-input' id='#{targetPrefix}Picker' readonly='true'#{targetWidth}></span><span class='dropdown-arrow'><i></i></span></span><div class='dropdown-list' id='#{targetPrefix}List'><ul class='dropdown-list-inner'>#{liTpl}</ul></div></span>";
+	//自定义li的tpl
+	that.customLiTpl = opt.customLiTpl || "<li value='#{id}' title='#{name}'>#{name}</li>";
 	//初始化
 	that._init();
 };
@@ -208,7 +211,7 @@ Dropdownlist.prototype._formLiTpl = function(){
 
 	// 拼装列表项的html
 	$.each(that.data,function(key,value){
-		html += "<li value='" + value.id + "' title='"+value.name+"'>" + value.name + "</li>";
+		html += helper.replaceTpl(that.customLiTpl, value);
 	});
 	return html;
 };
@@ -250,7 +253,7 @@ Dropdownlist.prototype._setDefaultVal = function(){
 		selValue = that.data[that.selIndex];
 	}
 	// 设置默认选中项
-	that.newInput.text(selValue.name).attr({"title":selValue.name,"value":selValue.id});
+	that.newInput.html(selValue.name).attr({"title":selValue.name,"value":selValue.id});
 	that.value = selValue.id;
 	that.title = selValue.name;
 	// 如果要支持表单提交或级联需要做的工作
@@ -391,7 +394,7 @@ Dropdownlist.prototype._bindEvent = function(){
 			newVal = thisObj.data[newIndex];
 		if(newVal.id != thisObj.newInput.attr("value")){
 			thisObj.selIndex = newIndex;
-			thisObj.newInput.text(that.text()).attr({
+			thisObj.newInput.html(that.html()).attr({
 				"value": newVal.id,
 				"title": newVal.name
 			});
@@ -430,6 +433,9 @@ Dropdownlist.prototype._bindEvent = function(){
 					//当下拉列表被收起时，去掉监听参考对象位置的计时器
 					clearInterval(Dropdownlist._fixPosTimer);
 				});*/
+				if(curObj.customScrollbar && (el == $(".mod-scroll",curObj.newSelector)[0] || $.contains($(".mod-scroll",curObj.newSelector)[0],el))){
+					return;
+				}
 				Dropdownlist._hide();
 			}
 		});
@@ -450,3 +456,5 @@ Dropdownlist.prototype._init = function(){
 	that._bindEvent();
 	return that;
 };
+
+module.exports = Dropdownlist;

@@ -46,6 +46,8 @@ A jQuery plugin for custom select
 | supportSubmit     | `number` | 0,选填 | 是否支持提交或级联操作 |
 | onChange     | `function` | 选填 | select的onChange回调 |
 | appendToBody     | `number` | 0,选填 | 下拉列表是否要插到body下，避免被祖先元素的任何样式限制（比如说z-index和overflow:hidden都可能导致下拉列表被挡住） |
+| customScrollbar     |`number` | false,选填 | 是否使用自定义滚动条 |
+| customLiTpl     |`string` | ```html<li value='#{id}' title='#{name}'>#{name}</li>```,选填 | 自定义li的tpl |
 
 ## 对外可见的属性和方法：
 
