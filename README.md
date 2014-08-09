@@ -4,6 +4,10 @@ A jQuery plugin for custom select
 
 >针对目前页面上有很多相同自定义样式的下拉列表散布在多个模块中（因为样式需要自定义，故不能使用原始的select标签，需要用其它标签来模拟一个select），将初始化及此部分的通用事件绑定代码提出来作为一个单独的组件，提供初始化、通用事件（包括下拉列表的显隐、列表项的选择等）、一套通用样式
 
+## Demo
+
+http://global-hao123.github.io/dropdownlist/
+
 ## How to use
 
 在页面上添加一个隐藏的select元素，参数至少需要提供一个id，
@@ -24,7 +28,7 @@ A jQuery plugin for custom select
 ```
 
  生成的自定义下拉列表宽度取决于占位selector的宽度，默认比其宽度少30px
- 
+
  实例化语句如下：
 
 ```javascript
@@ -73,7 +77,7 @@ A jQuery plugin for custom select
 
 ```javascript
 new Dropdownlist({
-    selector: "select1"        
+    selector: "select1"
 });
 ```
 
@@ -93,7 +97,7 @@ var data = [{
 }];
 new Dropdownlist({
     selector: "select1",
-    data: data       
+    data: data
 });
 ```
 
